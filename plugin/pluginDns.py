@@ -1,4 +1,5 @@
 from common import *
+from utils import *
 import plugin
 #import DNS
 #import json, base64, types, random, traceback
@@ -184,9 +185,9 @@ class pluginDns(plugin.PluginThread):
                       "is not a list"
             return False
 
-        fpr = self._sanitiseFingerprint (fpr)
+        fpr = sanitiseFingerprint (fpr)
         for a in allowable:
-            if self._sanitiseFingerprint (a) == fpr:
+            if sanitiseFingerprint (a) == fpr:
                 return True
 
         if app['debug']:
@@ -289,13 +290,3 @@ class pluginDns(plugin.PluginThread):
                     return tls
             except:
                 continue
-
-    # Sanitise a fingerprint for comparison.  This makes it
-    # all upper-case and removes colons and spaces.
-    def _sanitiseFingerprint (self, fpr):
-        #fpr = fpr.translate (None, ': ')
-        fpr = fpr.replace (":", "")
-        fpr = fpr.replace (" ", "")
-        fpr = fpr.upper ()
-
-        return fpr
