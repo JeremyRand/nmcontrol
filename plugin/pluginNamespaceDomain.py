@@ -24,7 +24,6 @@ class pluginNamespaceDomain(plugin.PluginThread):
         'getFingerprint': 'fingerprint',
         'getTls': 'tls',
         'getNS'        : 'ns',
-        'getTranslate'        : 'translate',
     }
 
     def pLoadconfig(self):
@@ -124,11 +123,6 @@ class pluginNamespaceDomain(plugin.PluginThread):
             return True
 
         if recType == 'ns' and ( type(data) == str or type(data) is unicode ):
-            result.add(domain, recType, data)
-            return True
-
-        # ns record in a dictionary, potentially with the translate option
-        if recType == 'ip' and 'ns' in data:
             result.add(domain, recType, data)
             return True
 

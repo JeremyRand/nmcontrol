@@ -129,7 +129,7 @@ class pluginDns(plugin.PluginThread):
         result = self._getRecordForRPC(domain, 'getIp4')
         # if we got an NS record because there is no IP we need to ask the NS server for the IP
         if self.conf['disable_ns_lookups'] != '1':
-            if "ns" in result:
+            if result == '["ns"]':
 
                 if(domain.endswith('_ip4.bit')):
                     domain = domain[:-8] + 'bit'
@@ -218,9 +218,6 @@ class pluginDns(plugin.PluginThread):
     def getNS(self, domain):
         return self._getRecordForRPC(domain, 'getNS')
 
-    def getTranslate(self, domain):
-        return self._getRecordForRPC(domain, 'getTranslate')
-
     def _getTls(self, domain):
         return self._getRecordForRPC(domain, 'getTls')
 
@@ -239,18 +236,6 @@ class pluginDns(plugin.PluginThread):
     def _getIPv4FromNS(self,domain):
         #1 is the A record
         server = self._getNSServer(domain)
-
-        translate = self.getTranslate(domain)
-
-        if translate != '[]':
-            try:
-                translate = json.loads(translate)
-            except:
-                if app['debug']: traceback.print_exc()
-                return
-
-            domain = translate[0].rstrip('.')
-
         return app['services']['dns']._lookup(domain, 1 , server)[0]['data']
 
     def _getIPv6FromNS(self,domain):
