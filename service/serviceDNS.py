@@ -34,7 +34,7 @@ class serviceDNS(plugin.PluginThread):
         #for service, value in self.services.iteritems():
         #    if re.search(value['filter'], qdict["domain"]):
         #        return app['plugins'][service].lookup(qdict)
-        if qdict["domain"].endswith(".bit") or qdict["domain"].endswith(".tor"):
+        if qdict["domain"].endswith(".bit"):
             return app['plugins']['domain'].lookup(qdict)
         return self._lookup(qdict)
 
