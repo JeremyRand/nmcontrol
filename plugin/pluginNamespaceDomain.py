@@ -218,20 +218,20 @@ class pluginNamespaceDomain(plugin.PluginThread):
             if answers != '[]':
                 nameData = json.loads(answers)
                 answers = str(nameData[0])
-                #did we get an IP address or nothing?
-                if answers:
-                    return answers
-            return
+            #did we get an IP address or nothing?
+            if answers:
+                return answers
+            return '[]'
         elif reqtype == "AAAA":
             #new style AAAA request
             answers = app['plugins']['dns'].getIp6(qdict["domain"])
             if answers != '[]':
                 nameData = json.loads(answers)
                 answers = str(nameData[0])
-                #did we get an IP address or nothing?
-                if answers:
-                    return answers
-            return
+            #did we get an IP address or nothing?
+            if answers:
+                return answers
+            return '[]'
         elif reqtype == "TLSA":
             port = qdict["domain"].split(".")[0][1:]
             protocol = qdict["domain"].split(".")[1][1:]
@@ -241,19 +241,15 @@ class pluginNamespaceDomain(plugin.PluginThread):
         return
 
     def _torLookup(self,qdict):
-
-        answers = app['plugins']['dns'].getOnion(qdict["domain"])
-        if answers != '[]':
-            nameData = json.loads(answers)
-            answers = str(nameData[0])
+        #if TXT record
+        if qdict['qtype'] == 16:
+            answers = app['plugins']['dns'].getOnion(qdict["domain"])
+            if answers != '[]':
+                nameData = json.loads(answers)
+                answers = str(nameData[0])
             #did we get an IP address or nothing?
             if answers:
-                #if TXT record
-                if qdict['qtype'] == 16:
-                    return {"type":16, "class":1, "ttl":300, "data":answers}
-                #if A record return a CNAME
-                elif qdict['qtype'] == 1:
-                    return {"type":5, "class":1, "ttl":300, "data":answers}
-
-        return
+                return answers
+            return '[]'
+        return '[]'
 
