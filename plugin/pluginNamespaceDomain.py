@@ -185,6 +185,7 @@ class pluginNamespaceDomain(plugin.PluginThread):
         return nameData
 
     def lookup(self, qdict) :
+
         if qdict["domain"].endswith(".bit"):
             return self._bitLookup(qdict)
 
