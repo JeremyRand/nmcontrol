@@ -3,7 +3,7 @@ import plugin
 #import DNS
 #import json, base64, types, random, traceback
 import re, json
-import random
+
 
 class dnsResult(dict):
 
@@ -58,7 +58,6 @@ class pluginDns(plugin.PluginThread):
         'getFreenet':        [1, 1, '<domain>', 'Get the freenet config for the domain'],
         'getFingerprint':    [1, 1, '<domain>', 'Get the sha1 of the certificate for the domain (deprecated)'],
         'getTlsFingerprint':    [1, 3, '<domain> <protocol> <port>', 'Get the TLS information for the domain'],
-        'getNS':        [1, 1, '<domain>', 'Get a list of NS for the domain'],
         'verifyFingerprint':    [1, 2, '<domain> <fingerprint>',
                      'Verify if the fingerprint is'
                      ' acceptable for the domain'],
@@ -125,32 +124,10 @@ class pluginDns(plugin.PluginThread):
         return result.toJsonForRPC()
 
     def getIp4(self, domain):
-        result = self._getRecordForRPC(domain, 'getIp4')
-        # if we got an NS record because there is no IP we need to ask the NS server for the IP
-        if result == '["ns"]':
-
-            if(domain.endswith('_ip4.bit')):
-                domain = domain[:-8] + 'bit'
-            if(domain.endswith('_ip.bit')):
-                domain = domain[:-7] + 'bit'
-
-            result = '["'+self._getIPv4FromNS(domain)+'"]'
-
-        return result
+        return self._getRecordForRPC(domain, 'getIp4')
 
     def getIp6(self, domain):
-        result = self._getRecordForRPC(domain, 'getIp6')
-        # if we got an NS record because there is no IP we need to ask the NS server for the IP
-        if result == '["ns"]':
-
-            if(domain.endswith('_ip6.bit')):
-                domain = domain[:-8] + 'bit'
-            if(domain.endswith('_ip.bit')):
-                domain = domain[:-7] + 'bit'
-
-            result = '["'+self._getIPv6FromNS(domain)+'"]'
-
-        return result
+        return self._getRecordForRPC(domain, 'getIp6')
 
     def getOnion(self, domain):
         return self._getRecordForRPC(domain, 'getOnion')
@@ -212,33 +189,8 @@ class pluginDns(plugin.PluginThread):
         result.add(domain, 'getTlsFingerprint' , answer)
         return result.toJsonForRPC()
 
-    def getNS(self, domain):
-        return self._getRecordForRPC(domain, 'getNS')
-
     def _getTls(self, domain):
         return self._getRecordForRPC(domain, 'getTls')
-
-    def _getNSServer(self,domain):
-        item = self.getNS(domain)
-
-        try:
-            servers = json.loads(item)
-        except:
-            if app['debug']: traceback.print_exc()
-            return
-
-        server = servers[random.randrange(0, len(servers))]
-        return server
-
-    def _getIPv4FromNS(self,domain):
-        #1 is the A record
-        server = self._getNSServer(domain)
-        return app['services']['dns']._lookup(domain, 1 , server)[0]['data']
-
-    def _getIPv6FromNS(self,domain):
-        #28 is the AAAA record
-        server = self._getNSServer(domain)
-        return app['services']['dns']._lookup(domain, 28 , server)[0]['data']
 
     def _getSubDomainTlsFingerprint(self,domain,protocol,port):
         #Get the first subdomain tls fingerprint that has the includeSubdomain flag turned on
