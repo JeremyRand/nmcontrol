@@ -17,6 +17,7 @@ class pluginNamespaceDomain(plugin.PluginThread):
     supportedMethods = {
         'getIp4'    : 'ip',
         'getIp6'    : 'ip6',
+        'getNs'     : 'ns',
         'getOnion'    : 'tor',
         'getI2p'    : 'i2p',
         'getI2p_b32'    : 'i2p_b32',

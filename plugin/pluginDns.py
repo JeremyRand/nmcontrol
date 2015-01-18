@@ -159,6 +159,9 @@ class pluginDns(plugin.PluginThread):
     def getIp6Private(self, domain):
         return self._getRecordForRPC(domain, 'getIp6')
 
+    def getNs(self, domain):
+        return self._getRecordForRPC(domain, 'getNs')
+
     def getOnion(self, domain):
         return self._getRecordForRPC(domain, 'getOnion')
 
