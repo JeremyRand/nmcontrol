@@ -124,9 +124,39 @@ class pluginDns(plugin.PluginThread):
         return result.toJsonForRPC()
 
     def getIp4(self, domain):
+        result = self.getIp4Private(domain)
+        # if we got an NS record because no IP exists in the Namecoin record, then we need to ask the NS server for the IP
+        if result == '["ns"]':
+            
+            if domain.endswith('_ip4.bit'):
+                domain = domain[:-8] + 'bit'
+            elif(domain.endswith('_ip.bit')):
+                domain = domain[:-7] + 'bit'
+            
+            if app['debug']:
+                print "FIXME: got an NS record for getIp4"
+        
+        return result
+
+    def getIp4Private(self, domain):
         return self._getRecordForRPC(domain, 'getIp4')
 
     def getIp6(self, domain):
+        result = self.getIp6Private(domain)
+        # if we got an NS record because no IP exists in the Namecoin record, then we need to ask the NS server for the IP
+        if result == '["ns"]':
+            
+            if domain.endswith('_ip6.bit'):
+                domain = domain[:-8] + 'bit'
+            elif(domain.endswith('_ip.bit')):
+                domain = domain[:-7] + 'bit'
+            
+            if app['debug']:
+                print "FIXME: got an NS record for getIp6"
+        
+        return result
+
+    def getIp6Private(self, domain):
         return self._getRecordForRPC(domain, 'getIp6')
 
     def getOnion(self, domain):
