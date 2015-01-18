@@ -1,4 +1,4 @@
-#name_scan "d/yourdomain" 1
+#namponse_scan "d/yourdomain" 1
 import sys, os
 #sys.path.append('/home/khal/sources/nmcontrol/lib/')
 import DNS
@@ -93,8 +93,6 @@ class Source(object):
         elif qtype == 28:
             #answer = struct.pack("!I", ipstr2int(value))
             reqtype = "AAAA"
-        elif qtype == 52:
-            reqtype = "TLSA"
         else : reqtype = None
         answers = app['services']['dns'].lookup({"query":query, "domain":domain, "qtype":qtype, "qclass":qclass, "src_addr":src_addr})
         #print 'domain:', domain
@@ -113,22 +111,17 @@ class Source(object):
                 elif response["type"] == 2 or response["type"] == 5:
                     tempresults["rdata"] = labels2str(response["data"].split("."))
                 elif response["type"] == 16 :
-                    tempresults["rdata"] = labels2str(response["data"])
+                    tempresults["rdata"] = label2str(response["data"])
                 elif response["type"] == 15 :
                     tempresult = struct.pack("!H", response["data"][0])
                     tempresult += labels2str(response["data"][1].split("."))
                     tempresults["rdata"] = tempresult
                 elif response["type"] == 28 :
                     tempresults["rdata"] = response["data"]
-                elif response["type"] == 52 :
-                    tempresult = '\x03\x00'
-                    tempresult += chr(int(response["data"][0][0]))
-                    tempresult += bytearray.fromhex(response["data"][0][1])
-                    tempresults["rdata"] = tempresult
                 #else : return 3, []
                 results.append(tempresults)
                 return 0, results
-            if type(response) == types.StringType :
+            if type(response) == types.StringType :             
                 if self.isIP(response) :
                     return 0, [{"qtype":1, "qclass":qclass, "ttl":300, "rdata":struct.pack("!I", ipstr2int(response))}]
             return 3, []
@@ -154,7 +147,7 @@ class Source(object):
                 elif response["type"] == 2 or response["type"] == 5:
                     tempresults["rdata"] = labels2str(response["data"].split("."))
                 elif response["type"] == 16 :
-                    tempresults["rdata"] = labels2str(response["data"])
+                    tempresults["rdata"] = label2str(response["data"])
                 elif response["type"] == 15 :
                     tempresult = struct.pack("!H", response["data"][0])
                     tempresult += labels2str(response["data"][1].split("."))
@@ -163,8 +156,6 @@ class Source(object):
                     if answers == [] :
                         return self.get_response(query, domain, 5, qclass, src_addr)
                     #tempresults["rdata"] = struct.pack("!I", ipstr2int(response["data"]))
-                    tempresults["rdata"] = response["data"]
-                elif response["type"] == 52 :
                     tempresults["rdata"] = response["data"]
                 #else : return 3, []
                 results.append(tempresults)
