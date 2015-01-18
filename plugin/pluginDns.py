@@ -45,6 +45,7 @@ class pluginDns(plugin.PluginThread):
     name = 'dns'
     options = {
         'start':    ['Launch at startup', 1],
+        'offline':  ['Do not generate network traffic on lookups (experimental, do not rely on this!)', '0']
         #'host':        ['Listen on ip', '127.0.0.1'],
         #'port':        ['Listen on port', 53],
         #'resolver':    ['Forward standard requests to', '8.8.8.8,8.8.4.4'],
@@ -126,15 +127,16 @@ class pluginDns(plugin.PluginThread):
     def getIp4(self, domain):
         result = self.getIp4Private(domain)
         # if we got an NS record because no IP exists in the Namecoin record, then we need to ask the NS server for the IP
-        if result == '["ns"]':
-            
-            if domain.endswith('_ip4.bit'):
-                domain = domain[:-8] + 'bit'
-            elif(domain.endswith('_ip.bit')):
-                domain = domain[:-7] + 'bit'
-            
-            if app['debug']:
-                print "FIXME: got an NS record for getIp4"
+        if self.conf['offline'] == '0':
+            if result == '["ns"]':
+                
+                if domain.endswith('_ip4.bit'):
+                    domain = domain[:-8] + 'bit'
+                elif(domain.endswith('_ip.bit')):
+                    domain = domain[:-7] + 'bit'
+                
+                if app['debug']:
+                    print "FIXME: got an NS record for getIp4"
         
         return result
 
@@ -144,15 +146,16 @@ class pluginDns(plugin.PluginThread):
     def getIp6(self, domain):
         result = self.getIp6Private(domain)
         # if we got an NS record because no IP exists in the Namecoin record, then we need to ask the NS server for the IP
-        if result == '["ns"]':
-            
-            if domain.endswith('_ip6.bit'):
-                domain = domain[:-8] + 'bit'
-            elif(domain.endswith('_ip.bit')):
-                domain = domain[:-7] + 'bit'
-            
-            if app['debug']:
-                print "FIXME: got an NS record for getIp6"
+        if self.conf['offline'] == '0':
+            if result == '["ns"]':
+                
+                if domain.endswith('_ip6.bit'):
+                    domain = domain[:-8] + 'bit'
+                elif(domain.endswith('_ip.bit')):
+                    domain = domain[:-7] + 'bit'
+                
+                if app['debug']:
+                    print "FIXME: got an NS record for getIp6"
         
         return result
 
