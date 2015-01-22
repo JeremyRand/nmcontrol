@@ -167,6 +167,9 @@ class pluginDns(plugin.PluginThread):
     def getNs(self, domain):
         return self._getRecordForRPC(domain, 'getNs')
 
+    def getTranslate(self, domain):
+        return self._getRecordForRPC(domain, 'getTranslate')
+
     def getOnion(self, domain):
         return self._getRecordForRPC(domain, 'getOnion')
 
