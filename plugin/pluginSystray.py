@@ -31,7 +31,16 @@ class pluginSystray(plugin.PluginThread):
             return
         if self.app['debug']: print "Systray.py: Plugin %s parent start" %(self.name)
         self.menu_options = self.gather_entries()
-        self.sti = ossystray.SysTrayIcon(icon, hover_text, self.menu_options, on_quit=self.do_quit, default_menu_index=None)
+        try:
+            self.sti = ossystray.SysTrayIcon(icon, hover_text, self.menu_options, on_quit=self.do_quit, default_menu_index=None)
+        except NameError:
+            # bail without systray for GUI people
+            import __main__
+            if "nmcontrolwin.pyw" in __main__.__file__:
+                raise Exception("Systray start failed. Get details by running from the command line.\n" +
+                                "Note: Windows systray needs Python Win32 Extensions.")
+            
+            return
         self.sti.app = self.app
         self.halted = 0
         self.running = 1
