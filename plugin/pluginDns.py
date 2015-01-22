@@ -53,6 +53,8 @@ class pluginDns(plugin.PluginThread):
     helps = {
         'getIp4':    [1, 1, '<domain>', 'Get a list of IPv4 for the domain'],
         'getIp6':    [1, 1, '<domain>', 'Get a list of IPv6 for the domain'],
+        'getIp4Offline':    [1, 1, '<domain>', 'Get a list of IPv4 for the domain, without generating network traffic'],
+        'getIp6Offline':    [1, 1, '<domain>', 'Get a list of IPv6 for the domain, without generating network traffic'],
         'getOnion':    [1, 1, '<domain>', 'Get the .onion for the domain'],
         'getI2p':    [1, 1, '<domain>', 'Get the i2p config for the domain'],
         'getI2p_b32':    [1, 1, '<domain>', 'Get the i2p base32 config for the domain'],
@@ -125,7 +127,7 @@ class pluginDns(plugin.PluginThread):
         return result.toJsonForRPC()
 
     def getIp4(self, domain):
-        result = self.getIp4Private(domain)
+        result = self.getIp4Offline(domain)
         # if we got an NS record because no IP exists in the Namecoin record, then we need to ask the NS server for the IP
         if self.conf['offline'] == '0':
             if result == '["ns"]':
@@ -140,11 +142,11 @@ class pluginDns(plugin.PluginThread):
         
         return result
 
-    def getIp4Private(self, domain):
+    def getIp4Offline(self, domain):
         return self._getRecordForRPC(domain, 'getIp4')
 
     def getIp6(self, domain):
-        result = self.getIp6Private(domain)
+        result = self.getIp6Offline(domain)
         # if we got an NS record because no IP exists in the Namecoin record, then we need to ask the NS server for the IP
         if self.conf['offline'] == '0':
             if result == '["ns"]':
@@ -159,7 +161,7 @@ class pluginDns(plugin.PluginThread):
         
         return result
 
-    def getIp6Private(self, domain):
+    def getIp6Offline(self, domain):
         return self._getRecordForRPC(domain, 'getIp6')
 
     def getNs(self, domain):
