@@ -17,10 +17,11 @@ class pluginData(plugin.PluginThread):
         {'import.namecoin':    ['Path of namecoin.conf', platformDep.getNamecoinDir() + os.sep + 'namecoin.conf']},
 
         {'update.mode':        ['Update mode', 'ondemand', '<none|all|ondemand>']},
-        {'update.from':        ['Update data from', 'namecoin', '<namecoin|url|file>']},
+        {'update.from':        ['Update data from', 'namecoin', '<namecoin|rest|file>']},
         {'update.freq':        ['Update data if older than', '30m', '<number>[h|m|s]']},
         {'update.file':        ['Update data from file ', 'data' + os.sep + 'namecoin.dat']},
         {'update.namecoin':    ['Path of namecoin.conf', platformDep.getNamecoinDir() + os.sep + 'namecoin.conf']},
+        {'update.rest':        ['REST API to query', 'http://localhost:8336/']},
 
         {'export.mode':        ['Export mode', 'none', '<none|all>']},
         {'export.to':        ['Export data to', 'file']},
