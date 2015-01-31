@@ -20,7 +20,11 @@ class MyHTTPSConnection(httplib.HTTPConnection):
 
     def connect(self):
         sock = socket.create_connection((self.host, self.port))
-        self.sock = ssl.wrap_socket(sock)
+        
+        self.context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+        self.context.set_ciphers("EDH+aRSA+AES256:EECDH+aRSA+AES256:!SSLv3")
+        
+        self.sock = self.context.wrap_socket(sock)
 
     def verifyCert(self, fprs):
         """
@@ -79,6 +83,14 @@ class backendData():
                 self.fprs = None
             else:
                 self.fprs = self._parseFprOptions(url.params)
+                if "testTlsConfig" in self.fprs:
+                    self.host = "www.ssllabs.com"
+                    self.port = 443
+                    testResults = self._queryHttpGet("/ssltest/viewMyClient.html")
+                    print "TLS test result:"
+                    print testResults
+                    import os
+                    os._exit(0)
         elif app['debug']:
             print "Unsupported scheme for REST URL:", url.scheme
 
