@@ -1,123 +1,108 @@
 from common import *
 from utils import *
 
-import hashlib
-import httplib
-import json
-import socket
-import ssl
+import requests
 import urllib
 import urlparse
 
-class MyHTTPSConnection(httplib.HTTPConnection):
-    """
-    Make a HTTPS connection, but support checking the
-    server's certificate fingerprint.
-    """
+# This backend requires non-default modules loaded.
+# If not using TLS, you can do this on Fedora with:
+# yum install python-requests
+# If using TLS (experimental), you can do this on Fedora with: 
+# yum install python-requests pyOpenSSL python-ndg_httpsclient python-pyasn1
 
-    def __init__(self, host, port):
-        httplib.HTTPConnection.__init__(self, host, port)
+# TODO: Finish testing the TLS code.  Note that Bitcoin Core is probably removing TLS support soon, so TLS support is solely for things like Nginx proxies.
 
-    def connect(self):
-        sock = socket.create_connection((self.host, self.port))
-        self.sock = ssl.wrap_socket(sock)
+fp_sha256 = ""
 
-    def verifyCert(self, fprs):
-        """
-        Check whether the server's certificate fingerprint
-        matches the given one.  'fprs' should be a dict with
-        keys corresponding to digest methods and values being
-        the digest value.
-        """
-
-        hasher = None
-        fpr = None
-        
-        if 'sha256' in fprs:
-            hasher = hashlib.sha256()
-            fpr = fprs['sha256']
-        elif 'sha1' in fprs:
-            hasher = hashlib.sha1()
-            fpr = fprs['sha1']
-
-        # Be strict here.  If this routine is called, it means that at least
-        # some parameters were given in the REST URI.  If we can't verify the
-        # fingerprint because the parameters were invalid, fail to make sure
-        # that the user does not expect security but doesn't get it due
-        # to an operational mistake.
-        if hasher is None:
-            if app['debug']:
-                print "no recognised fingerprint given, failing check"
-            return False
-        assert fpr is not None
-
-        cert = self.sock.getpeercert(True)
-        hasher.update(cert)
-        digest = hasher.hexdigest()
-
-        if sanitiseFingerprint(digest) != sanitiseFingerprint(fpr):
-            if app['debug']:
-                print "Fingerprint mismatch:"
-                print "  expected:", fpr
-                print "  got:", digest
-            return False
-
-        return True
+def assert_fingerprint(connection, x509, errnum, errdepth, ok):
+    # Accept a cert if verification is forced off, or if it's a non-primary CA cert (the main cert will still be verified), or if the SHA256 matches
+    return fp_sha256.lower() == "none" or errdepth > 0 or sanitiseFingerprint(x509.digest("sha256")) == sanitiseFingerprint(fp_sha256)
 
 class backendData():
     validURL = False
 
     def __init__(self, conf):
+        
+        global fp_sha256
+        
         url = urlparse.urlparse(conf)
         if url.scheme == 'http' or url.scheme == 'https':
             self.validURL = True
+            self.scheme = url.scheme
             self.tls = (url.scheme == 'https')
             self.host = url.hostname
             self.port = url.port
+            
+            # Sessions let us reuse TCP connections, while keeping unique identities on different TCP connections
+            self.sessions = {}
+            
+            if self.tls:
+                try:
+                    # Set ciphers and enable fingerprint verification via PyOpenSSL
+                    requests.packages.urllib3.contrib.pyopenssl.DEFAULT_SSL_CIPHER_LIST = "EDH+aRSA+AES256:EECDH+aRSA+AES256:!SSLv3"
+                    requests.packages.urllib3.contrib.pyopenssl._verify_callback = assert_fingerprint
+                    requests.packages.urllib3.contrib.pyopenssl.inject_into_urllib3()
+                except:
+                    if app['debug']:
+                        print "ERROR: Failed to load PyOpenSSL; make sure you have the right packages installed."
+                        print "On Fedora, run:"
+                        print "sudo yum install pyOpenSSL python-ndg_httpsclient python-pyasn1"
+                        print "Other distros/OS's may be similar"
+                
+                if app['debug']:
+                    print "WARNING: You are using the experimental REST over TLS feature.  This is probably broken and should not be used in production."
 
             if url.params == '':
-                self.fprs = None
+                self.fprs = {}
             else:
                 self.fprs = self._parseFprOptions(url.params)
+                
+                if "sha256" in self.fprs:
+                    fp_sha256 = self.fprs["sha256"]
+            
+            if self.tls and fp_sha256 == "":
+                if app['debug']:
+                    print "ERROR: REST SHA256 fingerprint missing in plugin-data.conf; REST lookups will fail."
+            
+            if "testTlsConfig" in self.fprs:
+                testResults = self._queryHttpGet("https://www.ssllabs.com/ssltest/viewMyClient.html", "").text
+                print "TLS test result:"
+                print testResults
+                import os
+                os._exit(0)
         elif app['debug']:
-            print "Unsupported scheme for REST URL:", url.scheme
+            print "ERROR: Unsupported scheme for REST URL:", url.scheme
 
     def getAllNames(self):
         # The REST API doesn't support enumerating the names.
-        return False
+        if app['debug']:
+            print 'ERROR: REST data backend does not support name enumeration; set import.mode=none or switch to a different import.from backend.'
+        return (True, None) # TODO: Should this be True rather than False?  See the data plugin for usage.
 
-    def getName(self, name):
-        if not self.validURL:
-            return "invalid REST URL", None
-
+    def getName(self, name, sessionId = ""):
+        
         encoded = urllib.quote_plus(name)
-        data = self._queryHttpGet("/rest/name/" + encoded + ".json")
-
-        if data is None:
-            return "query failed", None
-        return None, json.loads(data)
-
-    def _queryHttpGet(self, path):
-        assert self.validURL
-        if self.tls:
-            conn = MyHTTPSConnection(self.host, self.port)
-        else:
-            conn = httplib.HTTPConnection(self.host, self.port)
-        conn.request('GET', path)
-
-        if self.tls and (self.fprs is not None):
-            if not conn.verifyCert(self.fprs):
-                return "TLS fingerprint wrong", None
-
-        res = conn.getresponse()
-        if res.status != 200:
+        
+        result = self._queryHttpGet(self.scheme + "://" + self.host + ":" + str(self.port) + "/rest/name/" + encoded + ".json", sessionId)
+        
+        try:
+            resultJson = result.json()
+        except ValueError:
+            raise Exception("Error parsing REST response.  Make sure that Namecoin Core is running with -rest option.")
+        
+        return (None, resultJson)
+    
+    def _queryHttpGet(self, url, sessionId):
+        
+        # set up a session if we haven't yet for this identity (Tor users will use multiple identities)
+        if sessionId not in self.sessions:
             if app['debug']:
-                print "REST returned error code:", res.status
-                print res.read()
-            return None
-
-        return res.read()
-
+                print 'Creating new REST identity = "' + sessionId + '"'
+            self.sessions[sessionId] = requests.Session()
+        
+        return self.sessions[sessionId].get(url)
+    
     def _parseFprOptions(self, s):
         """
         Parse the REST URI params string that includes (optionally)
