@@ -4,6 +4,7 @@ from utils import *
 import requests
 import urllib
 import urlparse
+import json # Hack for Debian Wheezy compatibility; remove this import when Wheezy is phased out
 
 # This backend requires non-default modules loaded.
 # If not using TLS, you can do this on Fedora with:
@@ -87,7 +88,8 @@ class backendData():
         result = self._queryHttpGet(self.scheme + "://" + self.host + ":" + str(self.port) + "/rest/name/" + encoded + ".json", sessionId)
         
         try:
-            resultJson = result.json()
+            resultJson = json.loads(result.text) # Hack for Debian Wheezy compatibility; use the following line instead when Wheezy is phased out
+            # resultJson = result.json()
         except ValueError:
             raise Exception("Error parsing REST response.  Make sure that Namecoin Core is running with -rest option.")
         
