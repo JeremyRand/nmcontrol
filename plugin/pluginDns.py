@@ -194,10 +194,7 @@ class pluginDns(plugin.PluginThread):
 
     @plugin.public
     def getTranslate(self, domain):
-        
-        delegate = self.getDelegateType(domain)
-        
-        if delegate != None:
+        if len(json.loads(self.getNs(domain))) > 0:
             return json.dumps([])
         
         return self._getRecordForRPC(domain, 'getTranslate')
