@@ -18,6 +18,7 @@ class pluginNamespaceDomain(plugin.PluginThread):
         'getIp4'    : 'ip',
         'getIp6'    : 'ip6',
         'getNs'     : 'ns',
+        'getAlias' : 'alias', # broken because _expandSelectedRecord interferes
         'getTranslate' : 'translate',
         'getOnion'    : 'tor',
         'getI2p'    : 'i2p',
