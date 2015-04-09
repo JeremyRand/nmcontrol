@@ -51,6 +51,7 @@ class pluginDns(plugin.PluginThread):
         #'resolver':    ['Forward standard requests to', '8.8.8.8,8.8.4.4'],
     }
     helps = {
+        'getDelegateType':    [1, 1, '<domain>', 'Get the method (if any) used to delegate control of the domain (ns, translate, or alias)'],
         'getIp4':    [1, 1, '<domain>', 'Get a list of IPv4 for the domain'],
         'getIp6':    [1, 1, '<domain>', 'Get a list of IPv6 for the domain'],
         'getIp4Offline':    [1, 1, '<domain>', 'Get a list of IPv4 for the domain, without generating network traffic'],
@@ -127,6 +128,15 @@ class pluginDns(plugin.PluginThread):
         return result.toJsonForRPC()
     
     @plugin.public
+    def getDelegateType(self, domain):
+        if len(json.loads(self.getNs(domain))) > 0:
+            return "ns"
+        if len(json.loads(self.getTranslate(domain))) > 0:
+            return "translate"
+        # TODO: process alias
+        return None
+    
+    @plugin.public
     def getIp4(self, domain):
         result = self.getIp4Offline(domain)
         # if we got an NS record because no IP exists in the Namecoin record, then we need to ask the NS server for the IP
@@ -145,6 +155,11 @@ class pluginDns(plugin.PluginThread):
 
     @plugin.public
     def getIp4Offline(self, domain):
+        delegate = self.getDelegateType(domain)
+        
+        if delegate != None:
+            return json.dumps([delegate])
+        
         return self._getRecordForRPC(domain, 'getIp4')
 
     @plugin.public
@@ -166,6 +181,11 @@ class pluginDns(plugin.PluginThread):
 
     @plugin.public
     def getIp6Offline(self, domain):
+        delegate = self.getDelegateType(domain)
+        
+        if delegate != None:
+            return json.dumps([delegate])
+        
         return self._getRecordForRPC(domain, 'getIp6')
 
     @plugin.public
@@ -174,6 +194,12 @@ class pluginDns(plugin.PluginThread):
 
     @plugin.public
     def getTranslate(self, domain):
+        
+        delegate = self.getDelegateType(domain)
+        
+        if delegate != None:
+            return json.dumps([])
+        
         return self._getRecordForRPC(domain, 'getTranslate')
 
     @plugin.public
