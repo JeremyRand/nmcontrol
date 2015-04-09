@@ -9,7 +9,8 @@ import optparse
 import ConfigParser
 
 app = {}
-def main():
+
+def init():
     # init app config
     global app
     app['conf'] = ConfigParser.SafeConfigParser()
@@ -24,10 +25,11 @@ def main():
     # add conf path
     import platformDep
     path = os.path.join(platformDep.getNmcontrolDir(), 'conf') + os.sep
-    for argv in sys.argv:
-        if argv.startswith("--confdir=") or argv.startswith("--main.confdir="):
-            path = argv.split("=")[1]
-            path = os.path.realpath(path) + os.sep
+    if __name__=='__main__':
+        for argv in sys.argv:
+            if argv.startswith("--confdir=") or argv.startswith("--main.confdir="):
+                path = argv.split("=")[1]
+                path = os.path.realpath(path) + os.sep
     app['path']['conf'] = path
 
     import common
@@ -40,9 +42,10 @@ def main():
     app['debug'] = False
 
     # debug mode
-    for argv in sys.argv:
-        if argv in ['--debug=1','--main.debug=1']:
-            app['debug'] = True
+    if __name__=='__main__':
+        for argv in sys.argv:
+            if argv in ['--debug=1','--main.debug=1']:
+                app['debug'] = True
 
     # init modules
     import re
@@ -71,20 +74,23 @@ def main():
                     print "Exception when loading "+modType, module, ":", e
 
     # parse command line options
-    # Note: There should not be plugins and services with the same name
-    (options, app['args']) = app['parser'].parse_args()
-    for option, value in vars(options).items():
-        if value is not None:
-            tmp = option.split('.')
-            if len(tmp) == 1:
-                app['plugins']['main'].conf[tmp[0]] = value
-            else:
-                module = tmp[0]
-                tmp.remove(module)
-                if module in app['plugins']:
-                    app['plugins'][module].conf['.'.join(tmp)] = value
-                if module in app['services']:
-                    app['services'][module].conf['.'.join(tmp)] = value
+    # Note: There should not be plugins and services with the same name    
+    if __name__=='__main__':
+        (options, app['args']) = app['parser'].parse_args()
+        for option, value in vars(options).items():
+            if value is not None:
+                tmp = option.split('.')
+                if len(tmp) == 1:
+                    app['plugins']['main'].conf[tmp[0]] = value
+                else:
+                    module = tmp[0]
+                    tmp.remove(module)
+                    if module in app['plugins']:
+                        app['plugins'][module].conf['.'.join(tmp)] = value
+                    if module in app['services']:
+                        app['services'][module].conf['.'.join(tmp)] = value
+    else:
+        app['args'] = []
 
     ###### Act as client : send rpc request ######
     if len(app['args']) > 0 and app['args'][0] != 'start':
@@ -98,11 +104,13 @@ def main():
                 print data['result']['reply']
             if app['debug'] and data['result']['prints']: print "LOG:", data['result']['prints']
         if app['args'][0] != 'restart':
-            return
+            sys.exit(0)
 
     # daemon mode
     if os.name == "nt":  # MS Windows
         print "Daemon mode not possible on MS Windows."
+    elif __name__ != '__main__':
+        print "Not daemonizing since we're being hosted by another program."
     elif int(app['plugins']['main'].conf['daemon']) == 1:
         print "Entering background mode"
         import daemonize
@@ -123,6 +131,8 @@ def main():
         if app['plugins'][plugin].__dict__.has_key("criticalStartException") and app['plugins'][plugin].criticalStartException:
             raise Exception(app['plugins'][plugin].criticalStartException)
 
+def main():
+    global app
     #services_started = []
     #for service in app['services']:
     #    if app['services'][service].running:
@@ -135,9 +145,11 @@ def main():
     except (KeyboardInterrupt, SystemExit):
         print '\n! Received keyboard interrupt, quitting threads.\n'
 
+def shutdown():
     # stop main program
     app['plugins']['main'].stop()
 
-
 if __name__=='__main__':
+    init()
     main()
+    shutdown()
