@@ -155,11 +155,6 @@ class pluginDns(plugin.PluginThread):
 
     @plugin.public
     def getIp4Offline(self, domain):
-        delegate = self.getDelegateType(domain)
-        
-        if delegate != None:
-            return json.dumps([delegate])
-        
         return self._getRecordForRPC(domain, 'getIp4')
 
     @plugin.public
@@ -181,11 +176,6 @@ class pluginDns(plugin.PluginThread):
 
     @plugin.public
     def getIp6Offline(self, domain):
-        delegate = self.getDelegateType(domain)
-        
-        if delegate != None:
-            return json.dumps([delegate])
-        
         return self._getRecordForRPC(domain, 'getIp6')
 
     @plugin.public
@@ -194,10 +184,20 @@ class pluginDns(plugin.PluginThread):
 
     @plugin.public
     def getTranslate(self, domain):
-        if len(json.loads(self.getNs(domain))) > 0:
-            return json.dumps([])
+        result = json.loads(self._getRecordForRPC(domain, 'getTranslate'))
         
-        return self._getRecordForRPC(domain, 'getTranslate')
+        if len(result) == 0:
+            return None
+        
+        return result[0]
+    
+    def getAlias(self, domain):
+        result = json.loads(self._getRecordForRPC(domain, 'getAlias'))
+        
+        if len(result) == 0:
+            return None
+        
+        return result[0]
 
     @plugin.public
     def getOnion(self, domain):
