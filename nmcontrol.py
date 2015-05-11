@@ -4,7 +4,6 @@ __version__ = '0.8'
 
 import os
 import sys
-import inspect
 import optparse
 import ConfigParser
 
