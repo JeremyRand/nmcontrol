@@ -11,7 +11,6 @@ import ConfigParser
 app = {}
 def main():
     # init app config
-    global app
     app['conf'] = ConfigParser.SafeConfigParser()
     app['path'] = {}
     app['path']['app'] = os.path.dirname(os.path.realpath(__file__)) + os.sep
