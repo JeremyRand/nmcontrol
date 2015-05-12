@@ -8,7 +8,12 @@ fp_sha256 = {}
 
 # PyOpenSSL callback
 def verify_fingerprint(connection, x509, errnum, errdepth, ok):
-    host = connection.get_servername()
+    
+    try:
+        host = connection.get_servername()
+    except AttributeError, e:
+        raise Exception("ERROR: You appear to be on a broken PyOpenSSL version such as 0.14.  Please upgrade PyOpenSSL if you wish to use TLS validation.  " + str(e))
+    
     seen_fp = sanitiseFingerprint(x509.digest("sha256"))
     
     if app['debug']:
