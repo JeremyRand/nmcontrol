@@ -1,5 +1,6 @@
 import os
 import platform
+import stat
 
 def getNamecoinDir():
     if platform.system() == "Darwin":
