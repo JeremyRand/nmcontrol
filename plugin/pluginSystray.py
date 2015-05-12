@@ -11,9 +11,9 @@ hover_text = "NMControl"
 
 class pluginSystray(plugin.PluginThread):
     name = 'systray'
-    options = {
-        'start':    ['Launch at startup', 1],
-    }
+    options = [
+        {'start':    ['Launch at startup', 1]},
+    ]
     sti = None
 
     def gather_entries(self):

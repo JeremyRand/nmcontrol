@@ -104,12 +104,12 @@ def call_plugin(plugin, method, args):
 
 class pluginHttp(plugin.PluginThread):
     name = 'http'
-    options = {
-        'start':    ['Launch at startup', 1],
-        'host':        ['Listen on ip', '127.0.0.2', '<ip>'],
-        'port':        ['Listen on port', '8080', '<port>'],
+    options = [
+        {'start':    ['Launch at startup', 1]},
+        {'host':        ['Listen on ip', '127.0.0.2', '<ip>']},
+        {'port':        ['Listen on port', '8080', '<port>']},
         # TODO: Figure out what the defaults should be for IP/port
-    }
+    ]
     systrayEntry = ('httpGui', None, launch_httpGui)  # menu icons should somehow be possible via the middle option
 
     def pStatus(self):

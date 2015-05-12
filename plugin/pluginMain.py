@@ -4,13 +4,13 @@ import platform
 
 class pluginMain(plugin.PluginThread):
     name = 'main'
-    options = {
-        'start':    ['Launch at startup', (1, 0)[platform.system() == 'Windows']],
-        'debug':    ['Debug mode', 0, '<0|1>'],
-        'daemon':    ['Background mode', 1, '<0|1>'],
-        'confdir':    ['Configuration file directory', "<system conf dir>"],
-        #'plugins':    ['Load only those plugins', 'main,data,rpc'],
-    }
+    options = [
+        {'start':    ['Launch at startup', (1, 0)[platform.system() == 'Windows']]},
+        {'debug':    ['Debug mode', 0, '<0|1>']},
+        {'daemon':    ['Background mode', 1, '<0|1>']},
+        {'confdir':    ['Configuration file directory', "<system conf dir>"]},
+        #{'plugins':    ['Load only those plugins', 'main,data,rpc']},
+    ]
 
     def pStart(self):
         app['plugins']['rpc'].start2()

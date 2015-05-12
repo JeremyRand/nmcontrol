@@ -6,13 +6,13 @@ import random, re
 
 class serviceDNS(plugin.PluginThread):
     name = 'dns'
-    options = {
-        'start':    ['Launch at startup', 1],
-        'host':        ['Listen on ip', '127.0.0.1'],
-        'port':        ['Listen on port', 53],
-        'resolver':    ['Forward standard requests to', '8.8.8.8,8.8.4.4'],
-        'disable_standard_lookups': ['Disable lookups for standard domains','1']
-    }
+    options = [
+        {'start':    ['Launch at startup', 1]},
+        {'host':        ['Listen on ip', '127.0.0.1']},
+        {'port':        ['Listen on port', 53]},
+        {'resolver':    ['Forward standard requests to', '8.8.8.8,8.8.4.4']},
+        {'disable_standard_lookups': ['Disable lookups for standard domains','1']},
+    ]
     srv = None
 
     def pStart(self):

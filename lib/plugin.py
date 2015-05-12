@@ -20,7 +20,7 @@ class PluginThread(threading.Thread):
     desc = None
     running = False
     threadRunning = False
-    options = {}
+    options = []
     helps = {}
     depends = {}
     services = {}
@@ -156,11 +156,7 @@ class PluginThread(threading.Thread):
         # add command line args to the program options + build default configuration data
         defaultConf = '[' + self.name + ']\n'
         group = OptionGroup(app['parser'], self.name.capitalize() + " Options", self.desc)
-        if self.options.__class__ is dict:
-            tmp = []
-            for option, value in self.options.items():
-                tmp.append({option: value})
-            self.options = tmp
+
         #for option, value in self.options.items():
         for option in self.options:
             option, value = option.items()[0]

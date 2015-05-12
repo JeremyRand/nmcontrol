@@ -5,10 +5,10 @@ import json, base64, types, random, traceback
 
 class pluginNamespaceDomain(plugin.PluginThread):
     name = 'domain'
-    options = {
-        'start':    ['Launch at startup', 1],
-        #'resolver':    ['Forward standard requests to', '8.8.8.8,8.8.4.4'],
-    }
+    options = [
+        {'start':    ['Launch at startup', 1]},
+        #{'resolver':    ['Forward standard requests to', '8.8.8.8,8.8.4.4']},
+    ]
     depends = {'plugins': ['data', 'dns'],'services': ['dns']}
     filters = {'dns': '.bit$|.tor$'}
     handle  = ['dns']

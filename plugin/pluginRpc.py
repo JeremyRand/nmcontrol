@@ -5,11 +5,11 @@ import socket, json, threading, StringIO, sys, time, traceback
 
 class pluginRpc(plugin.PluginThread):
     name = 'rpc'
-    options = {
-        'start':    ['Launch at startup', 1],
-        'host':        ['Listen on ip', '127.0.0.1', '<ip>'],
-        'port':        ['Listen on port', 9000, '<port>'],
-    }
+    options = [
+        {'start':    ['Launch at startup', 1]},
+        {'host':        ['Listen on ip', '127.0.0.1', '<ip>']},
+        {'port':        ['Listen on port', 9000, '<port>']},
+    ]
 
     def pStatus(self):
         if self.running:

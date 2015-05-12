@@ -43,13 +43,13 @@ class dnsResult(dict):
 
 class pluginDns(plugin.PluginThread):
     name = 'dns'
-    options = {
-        'start':    ['Launch at startup', 1],
-        'disable_ns_lookups':    ['Disable remote lookups for NS records','0'],
-        #'host':        ['Listen on ip', '127.0.0.1'],
-        #'port':        ['Listen on port', 53],
-        #'resolver':    ['Forward standard requests to', '8.8.8.8,8.8.4.4'],
-    }
+    options = [
+        {'start':    ['Launch at startup', 1]},
+        {'disable_ns_lookups':    ['Disable remote lookups for NS records','0']},
+        #{'host':        ['Listen on ip', '127.0.0.1']},
+        #{'port':        ['Listen on port', 53]},
+        #{'resolver':    ['Forward standard requests to', '8.8.8.8,8.8.4.4']},
+    ]
     helps = {
         'getIp4':    [1, 1, '<domain>', 'Get a list of IPv4 for the domain'],
         'getIp6':    [1, 1, '<domain>', 'Get a list of IPv6 for the domain'],
