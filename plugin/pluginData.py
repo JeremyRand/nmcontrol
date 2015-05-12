@@ -45,7 +45,7 @@ class pluginData(plugin.PluginThread):
     def pLoadconfig(self):
         # convert string interval to a number of seconds
         for key, value in self.conf.items():
-            if '.freq' in key:
+            if '.freq' in key and type(self.conf[key]) != int:
                 if value[-1] == 's':
                     self.conf[key] = int(value[0:-1])
                 elif value[-1] == 'm':

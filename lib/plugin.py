@@ -34,6 +34,7 @@ class PluginThread(threading.Thread):
         self.nameclass = self.mode + self.name.capitalize()
         self.parser = app['parser']
         self.conf = {}
+        self._initconfig()
         self._loadconfig()
         threading.Thread.__init__(self)
 
@@ -88,7 +89,7 @@ class PluginThread(threading.Thread):
 
     def pReload(self, arg = []):
         if app['debug']: print "Plugin %s parent reload" %(self.name)
-        self.loadconfig()
+        self._loadconfig()
         return True
 
     def restart(self, arg = []):
@@ -142,7 +143,10 @@ class PluginThread(threading.Thread):
         methods.sort()
         return methods
 
-    def _loadconfig(self, arg = []):
+    def _getUserConfFile(self):
+        return app['path']['conf'] + self.nameconf
+
+    def _initconfig(self, arg = []):
         # manage services
         for service, value in self.services.iteritems():
             if self.name not in app['services'][service].services:
@@ -176,7 +180,7 @@ class PluginThread(threading.Thread):
         app['parser'].add_option_group(group)
 
         # create default config if none
-        userConfFile = app['path']['conf'] + self.nameconf
+        userConfFile = self._getUserConfFile()
         if not os.path.exists(userConfFile):
             if not os.path.exists(app['path']['conf']): # TODO: Note that with Python 3.2+ we can compress this to os.makedirs(app['path']['conf'], exist_ok=True), see http://stackoverflow.com/a/5032238
                 os.makedirs(app['path']['conf'])
@@ -184,6 +188,9 @@ class PluginThread(threading.Thread):
             fp.write(defaultConf)
             fp.close()
 
+    def _loadconfig(self, arg = []):
+        userConfFile = self._getUserConfFile()
+        
         # read user config
         fileconf = SafeConfigParser()
         fileconf.read(userConfFile)
