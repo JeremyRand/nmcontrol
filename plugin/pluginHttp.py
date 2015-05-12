@@ -56,7 +56,7 @@ def call_plugin(plugin, method, args):
     
         # can't call private/protected methods
         if method[0] == '_':
-            if app['debug']: print "RPC - forbidden cmd :", "/" + "/".join([plugin, method, arg1]) + ".json"
+            if app['debug']: print "RPC - forbidden cmd :", "/" + "/".join([plugin, method, args]) + ".json"
             raise Exception('Method "' + method + '" not allowed')
     
         """
